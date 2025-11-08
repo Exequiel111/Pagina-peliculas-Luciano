@@ -1,0 +1,44 @@
+/* Fuente Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* ANIMACIÓN DEL TÍTULO */
+@keyframes typing { from { width: 0 } to { width: 100% } }
+@keyframes blink-caret { 50% { border-color: transparent } }
+.animated-title {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 800;
+    color: #ef4444; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    border-right: .15em solid #ef4444; 
+    width: 0; 
+    animation: typing 4s steps(10, end) infinite, blink-caret .75s step-end infinite;
+}
+
+/* CARRUSEL */
+.carousel-container { perspective: 1000px; display: flex; justify-content: center; align-items: center; height: 500px; }
+.carousel-wheel { position: relative; transform-style: preserve-3d; transition: transform 0.8s ease-out; }
+.carousel-item {
+    position: absolute; top:0; left:0; overflow:hidden; cursor:pointer;
+    backface-visibility: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    border:4px solid white; border-radius: 0.5rem;
+    transition: transform 0.5s, opacity 0.5s, box-shadow 0.3s, z-index 0s;
+}
+.carousel-item:hover { box-shadow: 0 15px 30px rgba(239,68,68,0.9); transform: scale(1.1) translateZ(50px); z-index:100; }
+.carousel-item img { width:100%; height:100%; object-fit:cover; pointer-events:none; }
+
+/* PESTAÑA FILTROS */
+.filter-tab {
+    position: fixed; top:50%; left:0; transform:translateY(-50%) translateX(0);
+    width:250px; max-height:80vh; background:#1a1a1a; box-shadow:5px 0 15px rgba(239,68,68,0.5);
+    border-radius:0 0.5rem 0.5rem 0; padding:1rem; transition: transform 0.3s ease-in-out; z-index:40;
+}
+.filter-tab.closed { transform:translateY(-50%) translateX(-220px); }
+@media(max-width:639px) { .filter-tab { width:180px } .filter-tab.closed { transform:translateY(-50%) translateX(-150px) } }
+.filter-handle { position:absolute; top:0; right:-30px; width:30px; height:100%; background:#1a1a1a; display:flex; align-items:center; justify-content:center; cursor:pointer; border-radius:0 0.5rem 0.5rem 0; }
+.filter-handle-icon { color:#ef4444; font-size:1.5rem; transition: transform 0.3s; }
+.filter-tab.closed .filter-handle-icon { transform:rotate(180deg); }
+.filter-btn.active { background-color:#ef4444; color:white; font-weight:bold; box-shadow:0 0 10px rgba(239,68,68,0.5); }
+.no-scrollbar::-webkit-scrollbar { display:none; }
+.no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pelis pa rato - Películas </title>
+    <link rel="icon" href="assets/Imagenes/ss.png" type="image/x-icon">
+
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        'primary-dark': '#000000',
+                        'accent-red': '#ef4444',
+                        'soft-gray': '#e5e7eb',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        /* Título animado */
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes blink-caret { 50% { border-color: transparent } }
+        .animated-title {
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 800;
+            color: #ef4444;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: .15em solid #ef4444;
+            width: 0;
+            animation: typing 4s steps(10,end) infinite, blink-caret .75s step-end infinite;
+            animation-delay: 0.5s;
+        }
+
+        /* Carrusel 3D */
+        .carousel-container {
+            perspective:1200px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:500px;
+            overflow:visible;
+        }
+        .carousel-wheel {
+            position:relative;
+            transform-style:preserve-3d;
+            transition: transform 0.8s ease-out;
+        }
+        .carousel-item {
+            position:absolute;
+            top:0;
+            left:0;
+            overflow:hidden;
+            cursor:pointer;
+            backface-visibility:hidden;
+            box-shadow:0 10px 20px rgba(0,0,0,0.5);
+            border:4px solid white;
+            border-radius:0.75rem;
+            transition: transform 0.5s, opacity 0.5s, box-shadow 0.3s;
+        }
+        .carousel-item:hover {
+            box-shadow:0 15px 30px rgba(239,68,68,0.9);
+            transform: scale(1.08) translateZ(50px);
+            z-index:100;
+        }
+        .carousel-item img {
+            width:100%;
+            height:100%;
+            max-height:240px;
+            object-fit:cover;
+            object-position:center;
+            pointer-events:none;
+            border-radius:0.5rem;
+        }
+
+        /* Filtros laterales */
+        .filter-tab {
+            position: fixed;
+            top:50%;
+            left:0;
+            transform:translateY(-50%) translateX(0);
+            width:250px;
+            max-height:80vh;
+            background-color:#1a1a1a;
+            box-shadow:5px 0 15px rgba(239,68,68,0.5);
+            border-radius:0 0.5rem 0.5rem 0;
+            padding:1rem;
+            transition: transform 0.3s ease-in-out;
+            z-index:40;
+        }
+        .filter-tab.closed { transform:translateY(-50%) translateX(-220px); }
+
+        @media (max-width: 639px) {
+            .filter-tab { width:180px; }
+            .filter-tab.closed { transform:translateY(-50%) translateX(-150px); }
+        }
+
+        .filter-handle {
+            position:absolute;
+            top:0;
+            right:-30px;
+            width:30px;
+            height:100%;
+            background-color:#1a1a1a;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+            border-radius:0 0.5rem 0.5rem 0;
+        }
+
+        .filter-handle-icon {
+            color:#ef4444;
+            font-size:1.5rem;
+            transition: transform 0.3s;
+        }
+
+        .filter-tab.closed .filter-handle-icon { transform:rotate(180deg); }
+
+        .filter-btn.active {
+            background-color:#ef4444;
+            color:white;
+            font-weight:bold;
+            box-shadow:0 0 10px rgba(239,68,68,0.5);
+        }
+
+        /* Comentarios */
+        #comment-form input, #comment-form textarea { width:100%; }
+        #comment-form button { align-self:flex-start; }
+        .comment-item {
+            margin-bottom:1rem;
+            background:#111;
+            padding:0.75rem;
+            border-radius:0.5rem;
+            border:1px solid #ef4444;
+        }
+
+        /* Botones bajados */
+        .carousel-buttons {
+            margin-top: 120px;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white font-sans min-h-screen">
+
+<script src="https://unpkg.com/phosphor-icons"></script>
+
+<header class="sticky top-0 z-50 bg-accent-red shadow-xl border-b border-white border-opacity-30">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <!-- Logo agregado al lado del nombre -->
+            <a href="#" class="flex items-center text-2xl font-bold text-white tracking-wider rounded-lg p-2 hover:bg-red-600 transition duration-300">
+                <img src="assets/Imagenes/ss.png" alt="Logo" class="w-10 h-10 mr-2 object-contain"> 
+                Pelis pa <span class="text-primary-dark">rato</span>
+            </a>
+            <div class="hidden md:flex space-x-4">
+                <a href="https://exequiel111.github.io/Pagina-Peliculas/" class="text-primary-dark hover:bg-red-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300">Página Principal</a>
+                <a href="#series" class="text-primary-dark hover:bg-red-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300">Sección Series</a>
+                <a href="#nosotros" class="text-primary-dark hover:bg-red-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition duration-300">Sobre Nosotros</a>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="https://www.instagram.com/joavaquera_/?igsh=MThhbXZndGp4bHhv#" class="text-white hover:text-gray-900 transition duration-300" aria-label="Instagram"><i class="ph ph-instagram-logo text-2xl md:text-xl"></i></a>
+                <a href="https://www.instagram.com/jazzmartt_?igsh=MTQ3a2ImeGdoeWpkYw==" class="text-white hover:text-gray-900 transition duration-300" aria-label="Instagram"><i class="ph ph-instagram-logo text-2xl md:text-xl"></i></a>
+                <a href="https://www.instagram.com/exequielvisuara06?igsh=NHAxcjJ6ZDgxenk2" class="text-white hover:text-gray-900 transition duration-300" aria-label="Instagram"><i class="ph ph-instagram-logo text-2xl md:text-xl"></i></a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="max-w-7xl mx-auto py-8 sm:py-12 px-2 sm:px-6 lg:px-8">
+
+    <section class="text-center mb-10 sm:mb-16">
+        <h1 class="animated-title">PELÍCULAS</h1>
+        <p class="text-lg sm:text-xl mt-4 text-gray-400 px-2">¡Tu destino para el mejor contenido cinematográfico!</p>
+    </section>
+
+    <!-- Filtro lateral -->
+    <div id="filter-tab" class="filter-tab closed no-scrollbar">
+        <div class="filter-handle" onclick="toggleFilterTab()">
+            <i class="ph ph-sliders-horizontal filter-handle-icon"></i>
+        </div>
+        <h2 class="text-white text-xl font-bold mb-4 border-b border-gray-600 pb-2">Filtrar</h2>
+        <div class="space-y-2 text-sm max-h-full overflow-y-auto pr-2 no-scrollbar">
+            <button class="filter-btn w-full text-left bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition" data-genre="Todos">Todos</button>
+            <button class="filter-btn w-full text-left bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition" data-genre="Amor">Amor</button>
+            <button class="filter-btn w-full text-left bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition" data-genre="Terror">Terror</button>
+            <button class="filter-btn w-full text-left bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition" data-genre="Comedia">Comedia</button>
+            <button class="filter-btn w-full text-left bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition" data-genre="Ficción">Ficción</button>
+            <button class="filter-btn w-full text-left bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition" data-genre="Ciencia Ficción">Ciencia Ficción</button>
+        </div>
+    </div>
+
+    <!-- Carrusel -->
+    <section class="flex flex-col items-center pt-8 pb-12 sm:pt-12 sm:pb-20">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-8 text-white text-center">Nuestras Películas Destacadas</h2>
+        <div class="carousel-container w-full">
+            <div id="carousel-wheel" class="carousel-wheel"></div>
+        </div>
+
+        <div class="carousel-buttons flex space-x-4 sm:space-x-6 w-full justify-center px-4">
+            <button id="prev-btn" class="bg-gray-800 hover:bg-accent-red text-white font-bold py-3 px-5 sm:px-6 rounded-full shadow-lg transition transform hover:scale-105 text-lg flex items-center">
+                <i class="ph ph-caret-left text-xl mr-2"></i> Anterior
+            </button>
+            <button id="next-btn" class="bg-gray-800 hover:bg-accent-red text-white font-bold py-3 px-5 sm:px-6 rounded-full shadow-lg transition transform hover:scale-105 text-lg flex items-center">
+                Siguiente <i class="ph ph-caret-right text-xl ml-2"></i>
+            </button>
+        </div>
+    </section>
+
+    <!-- Comentarios -->
+    <section id="comentarios" class="mt-16 sm:mt-20 pt-8 sm:pt-10 border-t border-gray-800">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-accent-red text-center">Comentarios de la Comunidad</h2>
+        <div class="max-w-3xl mx-auto bg-gray-900 p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-700 flex flex-col">
+            <h3 class="text-xl font-semibold mb-4 text-white">Deja tu Comentario</h3>
+            <form id="comment-form" class="flex flex-col space-y-4">
+                <input type="text" id="comment-name" placeholder="Tu Nombre" required class="p-2 rounded bg-gray-800 border border-gray-600 text-white focus:outline-none focus:border-accent-red">
+                <textarea id="comment-text" placeholder="¿Qué te pareció la página o el contenido?" rows="4" required class="p-2 rounded bg-gray-800 border border-gray-600 text-white focus:outline-none focus:border-accent-red"></textarea>
+                <button type="submit" class="bg-accent-red hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300">Enviar Comentario</button>
+            </form>
+            <div class="mt-8 pt-6 border-t border-gray-700" id="comments-list">
+                <h4 class="text-lg font-semibold mb-4 text-gray-300">Comentarios (0)</h4>
+                <p id="no-comments-message" class="text-gray-500 text-center italic text-sm py-4">Sé el primero en dejar un comentario.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div id="video-modal" class="hidden fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4" onclick="closeModal(event)">
+        <div class="relative w-full max-w-lg md:max-w-2xl h-64 md:h-96 bg-black rounded-xl overflow-hidden">
+            <video id="video-frame" class="w-full h-full" controls autoplay></video>
+            <button class="absolute top-2 right-2 text-accent-red text-3xl font-bold" onclick="closeModal(event)">&times;</button>
+        </div>
+    </div>
+
+</main>
+
+<footer class="bg-accent-red text-white mt-20 py-6 text-center border-t border-white border-opacity-30">
+    <p>&copy; 2025 Pelis pa rato. Todos los derechos reservados.</p>
+</footer>
+
+<script>
+const movies = [
+    {title:"TITANIC", genre:"Amor", img:"assets/Imagenes/amor1.jpg", video:"assets/Videos/titanic.mp4"},
+    {title:"Terrifier 3", genre:"Terror", img:"assets/Imagenes/terror1.webp", video:"assets/Videos/terr.mp4"},
+    {title:"KUNG FU PANDA", genre:"Comedia", img:"assets/Imagenes/comedia1.webp", video:"assets/Videos/kung.mp4"},
+    {title:"COMO ENTRENAR A TU DRAGON", genre:"Ficción", img:"assets/Imagenes/ficcion1.webp", video:"assets/Videos/dra.mp4"},
+    {title:"TERMINATOR 2", genre:"Ciencia Ficción", img:"assets/Imagenes/cienciaf1.webp", video:"assets/Videos/Term2.mp4"},
+    {title:"CREPUSCULO", genre:"Amor", img:"assets/Imagenes/amor2.webp", video:"assets/Videos/crepus.mp4"},
+    {title:"EL CONJURO", genre:"Terror", img:"assets/Imagenes/terror2.webp", video:"assets/Videos/conjuro.mp4"},
+    {title:"LA ERA DEL HIELO", genre:"Comedia", img:"assets/Imagenes/comedia2.jpg", video:"assets/Videos/era.mp4"},
+    {title:"JOKER", genre:"Ficción", img:"assets/Imagenes/ficcion2.webp", video:"assets/Videos/joker.mp4"},
+    {title:"VENGADORES END GAME", genre:"Ciencia Ficción", img:"assets/Imagenes/cienciaf2.webp", video:"assets/Videos/endgame.mp4"},
+    {title:"3 METROS SOBRE EL CIELO", genre:"Amor", img:"assets/Imagenes/amor3.png", video:"assets/Videos/me.mp4"},
+    {title:"SAW", genre:"Terror", img:"assets/Imagenes/terror3.webp", video:"assets/Videos/SAW.mp4"},
+    {title:"MI VILLANO FAVORITO", genre:"Comedia", img:"assets/Imagenes/comedia3.jpg", video:"assets/Videos/gru.mp4"},
+    {title:"HARRY POTTER- LA CAMARA SECRETA", genre:"Ficción", img:"assets/Imagenes/ficcion3.webp", video:"assets/Videos/camara.mp4"},
+    {title:"VENGADORES INFINITY WAR", genre:"Ciencia Ficción", img:"assets/Imagenes/cienciaf3.webp", video:"assets/Videos/infinityW.mp4"},
+    {title:"ENREDADOS", genre:"Amor", img:"assets/Imagenes/amor4.jpeg", video:"assets/Videos/enre.mp4"},
+    {title:"IT", genre:"Terror", img:"assets/Imagenes/terror4.jpg", video:"assets/Videos/it.mp4"},
+    {title:"SHREK", genre:"Comedia", img:"assets/Imagenes/comedia4.jpg", video:"assets/Videos/she.mp4"},
+    {title:"MADAGASCAR", genre:"Ficción", img:"assets/Imagenes/ficcion4.jpg", video:"assets/Videos/madagas.mp4"},
+    {title:"GODZILLA VS KONG", genre:"Ciencia Ficción", img:"assets/Imagenes/cienciaf4.webp", video:"assets/Videos/kong.mp4"},
+];
+
+let moviesToRender = [...movies];
+let currentRotation = 0;
+
+function initCarousel(){
+    const wheel = document.getElementById('carousel-wheel');
+    wheel.innerHTML = '';
+    const n = moviesToRender.length;
+    const angle = 360 / n;
+    const radius = 600; // Ajuste mayor para evitar superposición
+    moviesToRender.forEach((movie,i)=>{
+        const div = document.createElement('div');
+        div.className = 'carousel-item w-[170px] h-[240px]';
+        div.style.transform = `rotateY(${i*angle}deg) translateZ(${radius}px)`;
+        div.innerHTML = `<img src="${movie.img}" alt="${movie.title}">`;
+        div.onclick = ()=>openModal(movie.video);
+        wheel.appendChild(div);
+    });
+}
+
+document.getElementById('prev-btn').addEventListener('click', ()=>{
+    const n = moviesToRender.length;
+    currentRotation += 360/n;
+    document.getElementById('carousel-wheel').style.transform = `rotateY(${currentRotation}deg)`;
+});
+
+document.getElementById('next-btn').addEventListener('click', ()=>{
+    const n = moviesToRender.length;
+    currentRotation -= 360/n;
+    document.getElementById('carousel-wheel').style.transform = `rotateY(${currentRotation}deg)`;
+});
+
+initCarousel();
+
+const filterBtns = document.querySelectorAll('.filter-btn');
+filterBtns.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+        filterBtns.forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const genre = btn.dataset.genre;
+        moviesToRender = genre === 'Todos' ? [...movies] : movies.filter(m=>m.genre === genre);
+        currentRotation = 0;
+        initCarousel();
+    });
+});
+
+const form = document.getElementById('comment-form');
+const commentsList = document.getElementById('comments-list');
+let comments = [];
+
+form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const name = document.getElementById('comment-name').value.trim();
+    const text = document.getElementById('comment-text').value.trim();
+    if(name && text){
+        comments.push({name, text});
+        updateComments();
+        form.reset();
+    }
+});
+
+function updateComments(){
+    const noMsg = document.getElementById('no-comments-message');
+    if(noMsg) noMsg.remove();
+    const count = comments.length;
+    let html = `<h4 class="text-lg font-semibold mb-4 text-gray-300">Comentarios (${count})</h4>`;
+    comments.forEach(c=>{
+        html += `<div class="comment-item"><p class="font-bold text-accent-red">${c.name}</p><p class="text-gray-300">${c.text}</p></div>`;
+    });
+    commentsList.innerHTML = html;
+}
+
+function openModal(videoSrc){
+    const modal = document.getElementById('video-modal');
+    const video = document.getElementById('video-frame');
+    video.src = videoSrc;
+    modal.classList.remove('hidden');
+}
+
+function closeModal(event){
+    if(event.target.id==='video-modal' || event.target.tagName==='BUTTON'){
+        const modal = document.getElementById('video-modal');
+        const video = document.getElementById('video-frame');
+        video.pause();
+        video.src='';
+        modal.classList.add('hidden');
+    }
+}
+
+function toggleFilterTab(){
+    const tab = document.getElementById('filter-tab');
+    tab.classList.toggle('closed');
+}
+</script>
+
+</body>
+</html>
